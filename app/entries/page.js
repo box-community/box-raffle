@@ -18,7 +18,7 @@ export default async function EntriesPage() {
     <main className="page entries-page">
       <section className="shell entries-shell">
         <header className="header">
-          <p className="kicker">Box raffle intake</p>
+          <img src="/box-devs.png" alt="Box Devs logo" className="logo" width={200} />
           <h1>Raffle entries</h1>
           <p className="lede">
             Files in the configured Raffle folder, with first and last name from

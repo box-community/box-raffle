@@ -1,5 +1,6 @@
 "use client";
 
+import Script from "next/script";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 const DURATION_MS = 10_000;
@@ -9,7 +10,14 @@ export default function EntriesTableClient({ rows }) {
   const [highlightIndex, setHighlightIndex] = useState(-1);
   const [winnerIndex, setWinnerIndex] = useState(-1);
   const [isSpinning, setIsSpinning] = useState(false);
+  const [isPreviewScriptReady, setIsPreviewScriptReady] = useState(false);
+  const [selectedRow, setSelectedRow] = useState(null);
+  const [previewToken, setPreviewToken] = useState("");
+  const [previewStatus, setPreviewStatus] = useState("");
+  const [previewError, setPreviewError] = useState("");
+  const [isPreviewLoading, setIsPreviewLoading] = useState(false);
   const intervalRef = useRef(null);
+  const previewRef = useRef(null);
 
   const n = rows.length;
   const canPick = n > 0 && !isSpinning;
@@ -22,6 +30,113 @@ export default function EntriesTableClient({ rows }) {
   }, []);
 
   useEffect(() => () => clearSpinTimer(), [clearSpinTimer]);
+
+  const closePreview = useCallback(() => {
+    if (previewRef.current) {
+      previewRef.current.removeAllListeners?.();
+      previewRef.current.hide?.();
+      previewRef.current = null;
+    }
+
+    setSelectedRow(null);
+    setPreviewToken("");
+    setPreviewStatus("");
+    setPreviewError("");
+    setIsPreviewLoading(false);
+  }, []);
+
+  useEffect(() => {
+    function handleKeyDown(event) {
+      if (event.key === "Escape") {
+        closePreview();
+      }
+    }
+
+    if (selectedRow) {
+      window.addEventListener("keydown", handleKeyDown);
+    }
+
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [closePreview, selectedRow]);
+
+  useEffect(() => {
+    if (!selectedRow || !isPreviewScriptReady || !previewToken || !window.Box) {
+      return undefined;
+    }
+
+    const Preview = window.Box.Preview || window.Box.ContentPreview;
+
+    if (!Preview) {
+      setPreviewError("Box Content Preview is unavailable.");
+      setIsPreviewLoading(false);
+      return undefined;
+    }
+
+    const preview = new Preview();
+    previewRef.current = preview;
+
+    preview.addListener?.("load", (data = {}) => {
+      if (data.error) {
+        setPreviewError(data.error);
+        setIsPreviewLoading(false);
+        return;
+      }
+
+      setPreviewStatus("");
+      setIsPreviewLoading(false);
+    });
+
+    preview.addListener?.("notification", (data = {}) => {
+      if (data.type === "error") {
+        setPreviewError(data.message || "Unable to preview this file.");
+      }
+    });
+
+    preview.show(selectedRow.id, previewToken, {
+      container: "#box-preview-container",
+      header: "light",
+      showDownload: false,
+    });
+
+    return () => {
+      preview.removeAllListeners?.();
+      preview.hide?.();
+      if (previewRef.current === preview) {
+        previewRef.current = null;
+      }
+    };
+  }, [isPreviewScriptReady, previewToken, selectedRow]);
+
+  const openPreview = useCallback(async (row) => {
+    if (!row?.id) {
+      return;
+    }
+
+    setSelectedRow(row);
+    setPreviewToken("");
+    setPreviewError("");
+    setPreviewStatus("Preparing preview.");
+    setIsPreviewLoading(true);
+
+    try {
+      const params = new URLSearchParams({ fileId: row.id });
+      const response = await fetch(`/api/box/preview-token?${params}`, {
+        cache: "no-store",
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Unable to prepare preview.");
+      }
+
+      setPreviewToken(data.accessToken);
+      setPreviewStatus("Loading preview.");
+    } catch (error) {
+      setPreviewError(error.message);
+      setPreviewStatus("");
+      setIsPreviewLoading(false);
+    }
+  }, []);
 
   const pickWinner = useCallback(() => {
     if (!canPick) {
@@ -68,6 +183,13 @@ export default function EntriesTableClient({ rows }) {
 
   return (
     <div className="entries-table-wrap">
+      <Script
+        src="https://cdn01.boxcdn.net/platform/elements/26.0.0/en-US/preview.js"
+        strategy="afterInteractive"
+        onLoad={() => setIsPreviewScriptReady(true)}
+        onError={() => setPreviewError("Unable to load Box Content Preview.")}
+      />
+
       <div className="entries-toolbar">
         <button
           type="button"
@@ -111,6 +233,7 @@ export default function EntriesTableClient({ rows }) {
                 return (
                   <tr
                     key={row.id}
+                    tabIndex={0}
                     className={
                       isWinner
                         ? "entries-row-winner"
@@ -119,6 +242,13 @@ export default function EntriesTableClient({ rows }) {
                           : undefined
                     }
                     aria-current={isWinner ? "true" : undefined}
+                    onClick={() => openPreview(row)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        openPreview(row);
+                      }
+                    }}
                   >
                     <td className="entries-file-name">{row.name}</td>
                     <td>{row.firstName || "—"}</td>
@@ -130,6 +260,54 @@ export default function EntriesTableClient({ rows }) {
           </tbody>
         </table>
       </div>
+
+      {selectedRow ? (
+        <div
+          className="entries-preview-backdrop"
+          role="presentation"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              closePreview();
+            }
+          }}
+        >
+          <section
+            className="entries-preview-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="entries-preview-title"
+          >
+            <header className="entries-preview-header">
+              <div>
+                <h2 id="entries-preview-title">{selectedRow.name}</h2>
+                <p>{[selectedRow.firstName, selectedRow.lastName].filter(Boolean).join(" ") || "Raffle file"}</p>
+              </div>
+              <button
+                type="button"
+                className="entries-preview-close"
+                onClick={closePreview}
+                aria-label="Close preview"
+              >
+                &times;
+              </button>
+            </header>
+
+            <div className="entries-preview-body">
+              {(isPreviewLoading || previewStatus || previewError) && (
+                <div
+                  className={`entries-preview-status ${
+                    previewError ? "error" : "idle"
+                  }`}
+                  role="status"
+                >
+                  {previewError || previewStatus}
+                </div>
+              )}
+              <div id="box-preview-container" className="entries-preview-target" />
+            </div>
+          </section>
+        </div>
+      ) : null}
     </div>
   );
 }
