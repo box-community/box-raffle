@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import Script from "next/script";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -10,6 +11,7 @@ const initialForm = {
 };
 
 export default function Home() {
+  const router = useRouter();
   const [form, setForm] = useState(initialForm);
   const [boxConfig, setBoxConfig] = useState(null);
   const [isBoxScriptReady, setIsBoxScriptReady] = useState(false);
@@ -99,8 +101,9 @@ export default function Home() {
       setPendingMetadata(false);
       setStatus({
         tone: "success",
-        text: "Raffle entry submitted and metadata saved to the uploaded file.",
+        text: "Raffle entry submitted. Redirecting.",
       });
+      router.push("/success");
     } catch (error) {
       setStatus({
         tone: "error",
@@ -109,7 +112,7 @@ export default function Home() {
     } finally {
       setIsSubmitting(false);
     }
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     if (!isBoxScriptReady || !boxConfig || uploaderRef.current || !window.Box) {

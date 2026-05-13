@@ -187,6 +187,41 @@ input:focus {
   cursor: not-allowed;
 }
 
+.success-page {
+  align-content: center;
+}
+
+.success-shell {
+  width: min(100%, 720px);
+}
+
+.success-panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: 0 20px 60px rgba(24, 32, 47, 0.1);
+  display: grid;
+  gap: 20px;
+  padding: clamp(20px, 4vw, 36px);
+}
+
+.success-panel p {
+  color: var(--muted);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.success-actions {
+  display: flex;
+}
+
+.success-link-button {
+  align-items: center;
+  display: inline-flex;
+  justify-content: center;
+  text-decoration: none;
+}
+
 .entries-page .entries-shell {
   width: min(100%, 960px);
 }
@@ -423,6 +458,11 @@ input:focus {
 
   .submit-button {
     width: 100%;
+  }
+
+  .success-actions {
+    align-items: stretch;
+    flex-direction: column;
   }
 
   .entries-table th,
