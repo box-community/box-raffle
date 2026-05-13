@@ -1,6 +1,5 @@
 import {
-  ensureRaffleFolder,
-  getUploaderAccessToken,
+  getTempUploaderConfig,
   toPublicBoxError,
 } from "@/lib/box";
 
@@ -8,8 +7,7 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    const folder = await ensureRaffleFolder();
-    const token = await getUploaderAccessToken(folder.id);
+    const { folder, token } = await getTempUploaderConfig();
 
     return Response.json(
       {

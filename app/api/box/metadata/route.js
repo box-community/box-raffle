@@ -1,4 +1,4 @@
-import { applyRaffleMetadata, toPublicBoxError } from "@/lib/box";
+import { finalizeRaffleUpload, toPublicBoxError } from "@/lib/box";
 
 export const dynamic = "force-dynamic";
 
@@ -11,15 +11,16 @@ export async function POST(request) {
       return Response.json({ message: validationError }, { status: 400 });
     }
 
-    const metadata = await applyRaffleMetadata(body.fileId, {
+    const result = await finalizeRaffleUpload(body.fileId, {
       firstName: body.firstName,
       lastName: body.lastName,
       email: body.email,
     });
 
     return Response.json({
-      fileId: body.fileId,
-      metadata,
+      fileId: result.file.id,
+      file: result.file,
+      metadata: result.metadata,
     });
   } catch (error) {
     const publicError = toPublicBoxError(error);
