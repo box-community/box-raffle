@@ -1,5 +1,7 @@
 # Box Raffle
 
+![screen shot](./public/raffle-screenshot.png)
+
 A Next.js raffle entry app that uses **Box** as the file store and `box-node-sdk` for all server-side Box API calls.
 
 Entrants fill out a form, upload a file with the Box Content Uploader, and submit. The app stages the upload in a `Temp` folder, renames the file with a UUID, attaches the entrant details as Box metadata, moves the file into a `Raffle` folder, and redirects the entrant to a success page.
