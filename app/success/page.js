@@ -12,9 +12,9 @@ export default function SuccessPage() {
           </p>
         </header>
 
-        <div className="success-panel">
+        {/*<div className="success-panel">
           <p>Be back at the Box booth for the live drawing on <b>Thursday at 2:20pm!</b></p>
-        </div>
+        </div>*/}
       </section>
     </main>
   );

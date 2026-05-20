@@ -221,9 +221,9 @@ export default function Home() {
       <section className="shell" aria-labelledby="raffle-title">
         <header className="header">
           <img src="/box-devs.png" alt="Box Devs logo" className="logo" width={200} />
-          <h1 id="raffle-title">LangChain Interrupt Raffle</h1>
+          <h1 id="raffle-title">Selfie Raffle</h1>
           <p className="lede">
-            Take a selfie, upload it to Box and attach your contact information as metadata. The winner of the raffle will win an Xbox!
+            Take a selfie, upload it to Box and your contact information will be attached as metadata. All data will be deleted following the raffle!
           </p>
         </header>
 
