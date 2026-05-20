@@ -12,9 +12,9 @@ export default function SuccessPage() {
           </p>
         </header>
 
-        {/*<div className="success-panel">
-          <p>Be back at the Box booth for the live drawing on <b>Thursday at 2:20pm!</b></p>
-        </div>*/}
+        <div className="success-panel">
+          <p>The source code for this app is available on <a href="https://github.com/box-community/box-raffle" target="_blank">GitHub</a>.</p>
+        </div>
       </section>
     </main>
   );
