@@ -126,6 +126,7 @@ export default function Home() {
       const file = normalizeBoxFile(boxFile);
 
       if (!file?.id) {
+        clearPendingUploadNames();
         setStatus({
           tone: "error",
           text: "Box uploaded the file but did not return a file ID.",
@@ -133,6 +134,7 @@ export default function Home() {
         return;
       }
 
+      clearPendingUploadNames();
       setUploadedFile(file);
       setStatus({
         tone: "idle",
@@ -145,6 +147,7 @@ export default function Home() {
     };
 
     const handleError = (error) => {
+      clearPendingUploadNames();
       const message = error?.error?.message || error?.message || "Upload failed.";
 
       setStatus({
@@ -160,10 +163,12 @@ export default function Home() {
     uploader.show(boxConfig.folderId, boxConfig.accessToken, {
       container: "#box-uploader",
       fileLimit: 1,
+      requestInterceptor: createUniqueUploadNameRequestInterceptor(),
       size: "large",
     });
 
     return () => {
+      clearPendingUploadNames();
       uploader.removeAllListeners();
       uploader.hide();
       uploaderRef.current = null;
@@ -291,6 +296,76 @@ export default function Home() {
       </section>
     </main>
   );
+}
+
+const pendingUploadNames = new Map();
+
+function createUniqueUploadNameRequestInterceptor() {
+  return (config) => {
+    const url = String(config.url || "");
+    const method = String(config.method || "get").toLowerCase();
+
+    if (method === "options" && url.includes("/files/content")) {
+      if (config.data?.name) {
+        config.data = {
+          ...config.data,
+          name: getOrCreateUniqueUploadName(config.data.name),
+        };
+      }
+
+      return config;
+    }
+
+    if (config.data?.attributes) {
+      try {
+        const attributes = JSON.parse(config.data.attributes);
+        const originalName =
+          attributes.name ||
+          (config.data.file instanceof File ? config.data.file.name : "") ||
+          "";
+        attributes.name = getOrCreateUniqueUploadName(originalName);
+        config.data = {
+          ...config.data,
+          attributes: JSON.stringify(attributes),
+        };
+      } catch {
+        // Leave the request unchanged if attributes cannot be parsed.
+      }
+    }
+
+    return config;
+  };
+}
+
+function getOrCreateUniqueUploadName(originalName) {
+  const key = String(originalName || "").trim() || "__anonymous__";
+
+  if (!pendingUploadNames.has(key)) {
+    pendingUploadNames.set(key, buildUniqueUploadName(originalName));
+  }
+
+  return pendingUploadNames.get(key);
+}
+
+function clearPendingUploadNames() {
+  pendingUploadNames.clear();
+}
+
+function buildUniqueUploadName(originalName = "") {
+  return `${crypto.randomUUID()}${getFileExtension(originalName)}`;
+}
+
+function getFileExtension(name) {
+  const trimmed = String(name || "").trim();
+  const lastSlash = Math.max(trimmed.lastIndexOf("/"), trimmed.lastIndexOf("\\"));
+  const basename = trimmed.slice(lastSlash + 1);
+  const dotIndex = basename.lastIndexOf(".");
+
+  if (dotIndex <= 0 || dotIndex === basename.length - 1) {
+    return "";
+  }
+
+  return basename.slice(dotIndex);
 }
 
 function normalizeBoxFile(boxFile) {

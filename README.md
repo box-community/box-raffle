@@ -4,7 +4,7 @@
 
 A Next.js raffle entry app that uses **Box** as the file store and `box-node-sdk` for all server-side Box API calls.
 
-Entrants fill out a form, upload a file with the Box Content Uploader, and submit. The app stages the upload in a `Temp` folder, renames the file with a UUID, attaches the entrant details as Box metadata, moves the file into a `Raffle` folder, and redirects the entrant to a success page.
+Entrants fill out a form, upload a file with the Box Content Uploader, and submit. The app uploads directly to a `Raffle` folder with a UUID filename (via a Box `requestInterceptor`), attaches the entrant details as Box metadata, and redirects the entrant to a success page.
 
 Admins can open `/entries` to view files in the raffle folder, preview each file with the Box Content Preview UI element, and pick a winner.
 
@@ -70,15 +70,15 @@ Raffle form (/)
   ↓
 Box Content Uploader
   ↓
-Temp folder upload
+Raffle folder upload
+  ↓
+requestInterceptor assigns UUID + original extension
   ↓
 /api/box/metadata
   ↓
 box-node-sdk
-  ├── verify file is in Temp
-  ├── rename file to UUID + original extension
-  ├── apply global/properties metadata
-  └── move file to Raffle
+  ├── verify file is in Raffle
+  └── apply global/properties metadata
   ↓
 Success page (/success)
 
@@ -94,16 +94,15 @@ Box Content Preview modal
 ## Box behavior
 
 - `box-node-sdk` is used for all Box API calls from the server.
-- The server finds or creates the configured `Temp` and `Raffle` folders under `BOX_PARENT_FOLDER_ID`.
-- Browser uploads are scoped to `Temp`.
-- On submit, the server validates that the file is still in `Temp` before mutating it.
-- Files are renamed to a UUID while preserving the original extension.
+- The server finds or creates the configured `Raffle` folder under `BOX_PARENT_FOLDER_ID`.
+- Browser uploads are scoped to `Raffle`.
+- A Box Content Uploader `requestInterceptor` renames each upload to a UUID while preserving the original extension, avoiding filename collisions in the folder.
+- On submit, the server validates that the file is in `Raffle` before attaching metadata.
 - Entrant metadata is stored on the Box file using the `global/properties` metadata template:
   - `firstName`
   - `lastName`
   - `email`
   - `submittedAt`
-- The finalized file is moved into the `Raffle` folder.
 - `/entries` only previews files that are currently in the configured `Raffle` folder.
 
 ## Environment variables
@@ -115,9 +114,8 @@ Box Content Preview modal
 | `BOX_ENTERPRISE_ID` | One of | Enterprise ID for CCG service-account access. Use this or `BOX_USER_ID`. |
 | `BOX_USER_ID` | One of | Box user ID for CCG user access. Use this or `BOX_ENTERPRISE_ID`. |
 | `BOX_ACCESS_TOKEN` | Optional | Short-lived developer token fallback. Useful locally when CCG is not configured. |
-| `BOX_PARENT_FOLDER_ID` | Optional | Parent folder where `Temp` and `Raffle` are found or created. Defaults to `0` (All Files root). |
-| `BOX_RAFFLE_FOLDER_NAME` | Optional | Final raffle folder name. Defaults to `Raffle`. |
-| `BOX_TEMP_FOLDER_NAME` | Optional | Upload staging folder name. Defaults to `Temp`. |
+| `BOX_PARENT_FOLDER_ID` | Optional | Parent folder where `Raffle` is found or created. Defaults to `0` (All Files root). |
+| `BOX_RAFFLE_FOLDER_NAME` | Optional | Raffle folder name. Defaults to `Raffle`. |
 
 ## Routes
 
@@ -126,8 +124,8 @@ Box Content Preview modal
 | `/` | Entrant form and Box Content Uploader. |
 | `/success` | Confirmation page shown after successful submit. |
 | `/entries` | Raffle admin table with file previews and winner picker. |
-| `/api/box/uploader-config` | Returns the Temp folder ID and uploader token. |
-| `/api/box/metadata` | Finalizes a Temp upload by renaming, tagging, and moving it. |
+| `/api/box/uploader-config` | Returns the Raffle folder ID and uploader token. |
+| `/api/box/metadata` | Finalizes a Raffle upload by tagging it with entrant metadata. |
 | `/api/box/preview-token` | Issues a preview token for a file in the Raffle folder. |
 
 ## Production notes

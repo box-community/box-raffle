@@ -8,7 +8,7 @@ export default function SuccessPage() {
           <img src="/box-devs.png" alt="Box Devs logo" className="logo" width={200} />
           <h1 id="success-title">Entry submitted</h1>
           <p className="lede">
-            Your file has been renamed, tagged with your raffle metadata, and moved into the Raffle folder.
+            Your file has been tagged with your raffle metadata in the Raffle folder.
           </p>
         </header>
 
