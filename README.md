@@ -116,7 +116,7 @@ Box Content Preview modal
 | `BOX_ACCESS_TOKEN` | Optional | Short-lived developer token fallback. Useful locally when CCG is not configured. |
 | `BOX_PARENT_FOLDER_ID` | Optional | Parent folder where `Raffle` is found or created. Defaults to `0` (All Files root). |
 | `BOX_RAFFLE_FOLDER_NAME` | Optional | Raffle folder name. Defaults to `Raffle`. |
-| `SECRET` | Required for CSV export | Shared secret for `GET /api/box/entries-csv`. Send it in the `X-Secret` request header. |
+| `SECRET` | Required for protected admin routes | Shared secret for `GET /api/box/entries-csv` and `DELETE /api/box/raffle-files`. Send it in the `X-Secret` request header. |
 
 ## Routes
 
@@ -129,6 +129,7 @@ Box Content Preview modal
 | `/api/box/metadata` | Finalizes a Raffle upload by tagging it with entrant metadata. |
 | `/api/box/preview-token` | Issues a preview token for a file in the Raffle folder. |
 | `/api/box/entries-csv` | Downloads a CSV of entrant first name, last name, and email for Raffle folder files. Requires the `X-Secret` header matching `SECRET`. |
+| `/api/box/raffle-files` | Deletes all files in the Raffle folder. Requires the `X-Secret` header matching `SECRET`. Returns `{"success": true}`. |
 
 ## Production notes
 

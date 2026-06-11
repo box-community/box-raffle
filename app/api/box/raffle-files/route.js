@@ -1,8 +1,4 @@
-import {
-  formatRaffleEntriesCsv,
-  listRaffleFolderFiles,
-  toPublicBoxError,
-} from "@/lib/box";
+import { deleteAllRaffleFolderFiles, toPublicBoxError } from "@/lib/box";
 import {
   getSecretAuthorizationError,
   secretProtectedJsonResponse,
@@ -10,7 +6,7 @@ import {
 
 export const dynamic = "force-dynamic";
 
-export async function GET(request) {
+export async function DELETE(request) {
   const authError = getSecretAuthorizationError(request);
 
   if (authError) {
@@ -18,17 +14,17 @@ export async function GET(request) {
   }
 
   try {
-    const rows = await listRaffleFolderFiles();
-    const csv = formatRaffleEntriesCsv(rows);
+    await deleteAllRaffleFolderFiles();
 
-    return new Response(csv, {
-      status: 200,
-      headers: {
-        "Cache-Control": "no-store",
-        "Content-Disposition": 'attachment; filename="raffle-entries.csv"',
-        "Content-Type": "text/csv; charset=utf-8",
+    return Response.json(
+      { success: true },
+      {
+        status: 200,
+        headers: {
+          "Cache-Control": "no-store",
+        },
       },
-    });
+    );
   } catch (error) {
     const publicError = toPublicBoxError(error);
 
