@@ -228,8 +228,9 @@ export default function Home() {
           <img src="/box-devs.png" alt="Box Devs logo" className="logo" width={200} />
           <h1 id="raffle-title">Selfie Raffle</h1>
           <p className="lede">
-            Take a selfie, upload it to Box and your contact information will be attached as metadata. All data will be deleted following the raffle!
+            Take a selfie, upload it to Box and your contact information will be attached as metadata!
           </p>
+          <p className="lede"><i>Your name and email are collected solely for the purpose of this raffle draw and will be permanently deleted from Box once the winner has been selected.</i></p>
         </header>
 
         <form className="entry-form" onSubmit={handleSubmit}>
