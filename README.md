@@ -128,7 +128,7 @@ Box Content Preview modal
 | `/api/box/uploader-config` | Returns the Raffle folder ID and uploader token. |
 | `/api/box/metadata` | Finalizes a Raffle upload by tagging it with entrant metadata. |
 | `/api/box/preview-token` | Issues a preview token for a file in the Raffle folder. |
-| `/api/box/entries-csv` | Downloads a CSV of entrant first name, last name, and email for Raffle folder files. Requires the `X-Secret` header matching `SECRET`. |
+| `/api/box/entries-csv` | Downloads a CSV of entrant first name, last name, email, and public Box shared link for each Raffle folder file. Requires the `X-Secret` header matching `SECRET`. |
 | `/api/box/raffle-files` | Deletes all files in the Raffle folder. Requires the `X-Secret` header matching `SECRET`. Returns `{"success": true}`. |
 
 ## Production notes

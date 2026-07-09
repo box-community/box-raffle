@@ -1,6 +1,6 @@
 import {
   formatRaffleEntriesCsv,
-  listRaffleFolderFiles,
+  listRaffleFolderFilesForCsvExport,
   toPublicBoxError,
 } from "@/lib/box";
 import {
@@ -18,7 +18,7 @@ export async function GET(request) {
   }
 
   try {
-    const rows = await listRaffleFolderFiles();
+    const rows = await listRaffleFolderFilesForCsvExport();
     const csv = formatRaffleEntriesCsv(rows);
 
     return new Response(csv, {
