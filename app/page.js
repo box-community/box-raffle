@@ -97,13 +97,35 @@ export default function Home() {
         throw new Error(data.message || "Unable to save metadata.");
       }
 
+      const emailResponse = await fetch("/api/send", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          fileId: data.fileId,
+          to: formRef.current.email,
+          sharedLink: data.sharedLink,
+        }),
+      });
+      const emailData = await emailResponse.json();
+
+      if (!emailResponse.ok) {
+        throw new Error(
+          `Raffle entry saved, but the confirmation email could not be sent: ${emailData.message || "Unknown email error."}`,
+        );
+      }
+
       appliedFileIdRef.current = fileId;
       setPendingMetadata(false);
       setStatus({
         tone: "success",
-        text: "Raffle entry submitted. Redirecting.",
+        text: "Raffle entry submitted and confirmation email sent. Redirecting.",
       });
-      router.push("/success");
+      const successParams = new URLSearchParams({
+        sharedLink: data.sharedLink,
+      });
+      router.push(`/success?${successParams.toString()}`);
     } catch (error) {
       setStatus({
         tone: "error",
@@ -273,7 +295,7 @@ export default function Home() {
             </div>
 
             <div className="field full">
-              <label htmlFor="box-uploader">File Upload</label>
+              <label htmlFor="box-uploader">Selfie Photo Upload</label>
               <div className="uploader-frame">
                 <div
                   id="box-uploader"
@@ -290,7 +312,7 @@ export default function Home() {
 
           <div className="actions">
             <button className="submit-button" type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Submitting" : "Submit"}
+              {isSubmitting ? "Submitting..." : "Submit Selfie"}
             </button>
           </div>
         </form>

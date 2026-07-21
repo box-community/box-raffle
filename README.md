@@ -4,7 +4,7 @@
 
 A Next.js raffle entry app that uses **Box** as the file store and `box-node-sdk` for all server-side Box API calls.
 
-Entrants fill out a form, upload a file with the Box Content Uploader, and submit. The app uploads directly to a `Raffle` folder with a UUID filename (via a Box `requestInterceptor`), attaches the entrant details as Box metadata, and redirects the entrant to a success page.
+Entrants fill out a form, upload a file with the Box Content Uploader, and submit. The app uploads directly to a `Raffle` folder with a UUID filename (via a Box `requestInterceptor`), attaches the entrant details as Box metadata, creates an open shared link that permits downloads, emails the success details to the entrant, and redirects them to a success page where they can download their selfie.
 
 Admins can open `/entries` to view files in the raffle folder, preview each file with the Box Content Preview UI element, and pick a winner.
 
@@ -55,7 +55,7 @@ Submit a raffle entry from `/`:
 1. Enter first name, last name, and email.
 2. Upload one file with the embedded Box Content Uploader.
 3. Click Submit.
-4. After the Box workflow completes, the app redirects to `/success`.
+4. After the Box workflow completes, the app emails the confirmation and redirects to `/success`.
 
 Review entries from `/entries`:
 
@@ -78,9 +78,12 @@ requestInterceptor assigns UUID + original extension
   ↓
 box-node-sdk
   ├── verify file is in Raffle
-  └── apply global/properties metadata
+  ├── apply global/properties metadata
+  └── create an open, download-enabled shared link
   ↓
-Success page (/success)
+/api/send emails the same content through Resend
+  ↓
+Success page (/success) displays the shared link
 
 Entries page (/entries)
   ↓
@@ -98,6 +101,7 @@ Box Content Preview modal
 - Browser uploads are scoped to `Raffle`.
 - A Box Content Uploader `requestInterceptor` renames each upload to a UUID while preserving the original extension, avoiding filename collisions in the folder.
 - On submit, the server validates that the file is in `Raffle` before attaching metadata.
+- On submit, the server creates an open shared link with downloads enabled and returns it for display on the success page.
 - Entrant metadata is stored on the Box file using the `global/properties` metadata template:
   - `firstName`
   - `lastName`
@@ -116,6 +120,8 @@ Box Content Preview modal
 | `BOX_ACCESS_TOKEN` | Optional | Short-lived developer token fallback. Useful locally when CCG is not configured. |
 | `BOX_PARENT_FOLDER_ID` | Optional | Parent folder where `Raffle` is found or created. Defaults to `0` (All Files root). |
 | `BOX_RAFFLE_FOLDER_NAME` | Optional | Raffle folder name. Defaults to `Raffle`. |
+| `RESEND_API_KEY` | Required for confirmation emails | Resend API key used by `/api/send`. |
+| `RESEND_FROM_EMAIL` | Recommended | Sender name and address. Use an address on a verified Resend domain in production. Defaults to `Box Raffle <onboarding@resend.dev>` for testing. |
 | `SECRET` | Required for protected admin routes | Shared secret for `GET /api/box/entries-csv` and `DELETE /api/box/raffle-files`. Send it in the `X-Secret` request header. |
 
 ## Routes
@@ -127,6 +133,7 @@ Box Content Preview modal
 | `/entries` | Raffle admin table with file previews and winner picker. |
 | `/api/box/uploader-config` | Returns the Raffle folder ID and uploader token. |
 | `/api/box/metadata` | Finalizes a Raffle upload by tagging it with entrant metadata. |
+| `/api/send` | Emails the success-page content and selfie shared link to the entrant. |
 | `/api/box/preview-token` | Issues a preview token for a file in the Raffle folder. |
 | `/api/box/entries-csv` | Downloads a CSV of entrant first name, last name, email, and public Box shared link for each Raffle folder file. Requires the `X-Secret` header matching `SECRET`. |
 | `/api/box/raffle-files` | Deletes all files in the Raffle folder. Requires the `X-Secret` header matching `SECRET`. Returns `{"success": true}`. |
@@ -137,4 +144,3 @@ Box Content Preview modal
 - Use downscoped upload and preview tokens in the browser.
 - In the Box app configuration, add your deployed app origin, for example `https://your-raffle.domain.com`, to **CORS Domains**. This is required for the embedded Box UI Elements.
 - Lock down `/entries` before using this outside a trusted demo or internal environment.
-

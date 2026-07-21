@@ -222,6 +222,10 @@ input:focus {
   text-decoration: none;
 }
 
+.shared-link-url {
+  overflow-wrap: anywhere;
+}
+
 .entries-page .entries-shell {
   width: min(100%, 960px);
 }

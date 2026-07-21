@@ -21,6 +21,7 @@ export async function POST(request) {
       fileId: result.file.id,
       file: result.file,
       metadata: result.metadata,
+      sharedLink: result.sharedLink,
     });
   } catch (error) {
     const publicError = toPublicBoxError(error);
