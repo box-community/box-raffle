@@ -14,7 +14,7 @@ export function EmailTemplate({ sharedLink }) {
 
 const styles = {
   body: {
-    backgroundColor: "#f4f1eb",
+    backgroundColor: "#fff",
     color: "#18202f",
     fontFamily: "Arial, sans-serif",
     margin: "0 auto",
