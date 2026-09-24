@@ -1,3 +1,4 @@
+import { CALENDAR_HREF } from "@/app/components/email";
 import {
   RAFFLE_SUCCESS_TITLE,
   SuccessDetails,
@@ -16,7 +17,11 @@ export default async function SuccessPage({ searchParams }) {
           <p className="lede">
             Raffle drawing will be held on Friday, Sept 25 at 1:00pm at the Box Booth. Remember, you MUST be present to win!
           </p>
-          <p><a target="_blank" href="https://calendar.google.com/calendar/render?action=TEMPLATE&text=AIEWF%3A%20Xbox%20Raffle%20at%20Box%20Booth&dates=20260925T130000/20260925T132000&ctz=America%2FLos_Angeles&details=Join%20us%20for%20the%20live%20drawing%20for%20an%20Xbox%21%20Remember%2C%20you%20MUST%20be%20present%20to%20win.">Add to calendar</a></p>
+          <p>
+            <a target="_blank" rel="noreferrer" href={CALENDAR_HREF}>
+              Add to calendar
+            </a>
+          </p>
         </header>
 
         <SuccessDetails sharedLink={sharedLink} />

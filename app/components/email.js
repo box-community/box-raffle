@@ -6,6 +6,7 @@ import {
 const CALENDAR_HREF =
   "https://calendar.google.com/calendar/render?action=TEMPLATE&text=AIEWF%3A%20Xbox%20Raffle%20at%20Box%20Booth&dates=20260925T130000/20260925T132000&ctz=America%2FLos_Angeles&details=Join%20us%20for%20the%20live%20drawing%20for%20an%20Xbox%21%20Remember%2C%20you%20MUST%20be%20present%20to%20win.";
 
+export { CALENDAR_HREF };
 export function EmailTemplate({ sharedLink }) {
   return (
     <div style={styles.body}>
